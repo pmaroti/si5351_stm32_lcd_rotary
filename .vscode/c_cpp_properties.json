@@ -1,0 +1,21 @@
+{
+    "configurations": [
+    {
+    "name": "STM32 Debug",
+    "includePath": [
+        "${workspaceRoot}/**"
+    ],
+    "defines": [
+        "UNICODE",
+        "_UNICODE",
+        "USE_HAL_DRIVER",
+        "STM32F103xB",
+        "_DEBUG",
+        "USE_HAL_DRIVER"
+    ],
+    "cStandard": "c99",
+    "intelliSenseMode": "clang-x86"
+    }
+    ],
+    "version": 4
+}
