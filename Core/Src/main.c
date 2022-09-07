@@ -18,6 +18,8 @@
 
 
 #include "main.h"
+#include "usb_device.h"
+#include "usbd_cdc_if.h"
 #include "stdio.h"
 #include "i2c-lcd.h"
 #include "si5351.h"
@@ -27,7 +29,7 @@ ADC_HandleTypeDef hadc1;
 DMA_HandleTypeDef hdma_adc1;
 I2C_HandleTypeDef hi2c1;
 TIM_HandleTypeDef htim2;
-PCD_HandleTypeDef hpcd_USB_FS;
+
 
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
@@ -35,11 +37,20 @@ static void MX_DMA_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_TIM2_Init(void);
-static void MX_USB_PCD_Init(void);
 
 int row=0;
 int col=0;
 const int32_t correction = 978;
+
+void USB_TransmitString(const char* str) {
+  CDC_Transmit_FS((uint8_t*)str, strlen(str));
+}
+
+void processUSBData(uint8_t* Buf, uint32_t *Len) {
+  char rBuf[100];
+  sprintf(rBuf, "Received2: %s", Buf);
+  USB_TransmitString(rBuf);
+}
 
 int main(void)
 {
@@ -61,7 +72,7 @@ int main(void)
   MX_ADC1_Init();
   MX_I2C1_Init();
   MX_TIM2_Init();
-  MX_USB_PCD_Init();
+  MX_USB_DEVICE_Init();
 
   lcd_init ();
   lcd_send_string ("SI5351");
@@ -88,9 +99,9 @@ int main(void)
       newEncVal - oldEncValue;
 
     if (delta) {
-      lcd_put_cur(1, 0);
-      sprintf(strBuffer,"%lu", newEncVal);
-      lcd_send_string(strBuffer);
+      //lcd_put_cur(1, 0);
+      //sprintf(strBuffer,"%lu", newEncVal);
+      //lcd_send_string(strBuffer);
       if ( 
           ((frequency[freqIdx] + delta * position)  > 8000L) 
           &&  
@@ -300,20 +311,6 @@ static void MX_TIM2_Init(void)
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-}
-
-static void MX_USB_PCD_Init(void)
-{
-  hpcd_USB_FS.Instance = USB;
-  hpcd_USB_FS.Init.dev_endpoints = 8;
-  hpcd_USB_FS.Init.speed = PCD_SPEED_FULL;
-  hpcd_USB_FS.Init.low_power_enable = DISABLE;
-  hpcd_USB_FS.Init.lpm_enable = DISABLE;
-  hpcd_USB_FS.Init.battery_charging_enable = DISABLE;
-  if (HAL_PCD_Init(&hpcd_USB_FS) != HAL_OK)
   {
     Error_Handler();
   }
